@@ -7,6 +7,7 @@ import axios from './http.js';
 import { sync } from 'vuex-router-sync';
 import ElementUI from 'element-ui';
 import '@/assets/element/theme/index.css';
+import '../node_modules/nprogress/nprogress.css';
 
 Vue.config.productionTip = false;
 

@@ -45,8 +45,8 @@ export default {
 	  },
 	  logout () {
 			this.$confirm('确认退出吗?', '提示', {}).then(() => {
-		  	this.$store.dispatch('Logout');
         this.$router.options.routes = [];
+		  	this.$store.dispatch('Logout');
 				this.$router.replace({ path: '/login' });
 			})
 	  }

@@ -1,33 +1,20 @@
 <?php
-/*
- *          ┌─┐       ┌─┐
- *       ┌──┘ ┴───────┘ ┴──┐
- *       │                 │
- *       │       ───       │
- *       │  ─┬┘       └┬─  │
- *       │                 │
- *       │       ─┴─       │
- *       └───┐         ┌───┘
- *           │         └──────────────┐
- *           │                        ├─┐
- *           │                        ┌─┘
- *           │                        │
- *           └─┐  ┐  ┌───────┬──┐  ┌──┘
- *             │ ─┤ ─┤       │ ─┤ ─┤
- *             └──┴──┘       └──┴──┘
- *        @Author Ethan <ethan@brayun.com>
- */
 
 namespace backend\controllers;
 
-use brayun\ucenter\models\User;
-use brayun\ucenter\models\UserSearch;
 use Yii;
+use common\models\Article;
+use common\models\ArticleSearch;
 use yii\filters\auth\HttpBearerAuth;
 use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
-class UserController extends Controller
+/**
+ * ArticleController implements the CRUD actions for Article model.
+ */
+class ArticleController extends Controller
 {
 
     public function behaviors()
@@ -36,18 +23,24 @@ class UserController extends Controller
         $behaviors['token'] = [
             'class' => HttpBearerAuth::className()
         ];
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::className(),
+            'actions' => [
+                'delete' => ['POST'],
+            ],
+        ];
         return $behaviors;
     }
 
     /**
-     * Lists all User models.
+     * Lists all Article models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new UserSearch();
+        $searchModel = new ArticleSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
+        $dataProvider->query->with('type')->asArray();
         return [
             'code' => 0,
             'msg' => '获取成功',
@@ -59,8 +52,32 @@ class UserController extends Controller
         ];
     }
 
+    public function actionUpload()
+    {
+        if (empty($_FILES['file']['tmp_name']) && strpos($_FILES['file']['type'], 'image') === -1) {
+            return [
+                'code' => 1,
+                'msg' => '上传失败',
+            ];
+        }
+        $ext = explode('.', $_FILES['file']['name']);
+        $ext = $ext[count($ext)-1];
+        $name = date('YmdHis').mt_rand(1000000,9999999).'.'.$ext;
+        if (Yii::$app->upload->write($name, file_get_contents($_FILES['file']['tmp_name']))) {
+            return [
+                'code' => 0,
+                'msg' => '上传成功!',
+                'result' => Yii::$app->params['uploadDomain'].'/'.$name
+            ];
+        }
+        return [
+            'code' => 1,
+            'msg' => '上传失败'
+        ];
+    }
+
     /**
-     * Displays a single User model.
+     * Displays a single Article model.
      * @param integer $id
      * @return mixed
      */
@@ -72,25 +89,28 @@ class UserController extends Controller
     }
 
     /**
-     * Creates a new User model.
+     * Creates a new Article model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new User();
+        $model = new Article();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+            return [
+                'code' => 0,
+                'msg' => '发布成功'
+            ];
         }
+        return [
+            'code' => 1,
+            'msg' => $model->getErrorOne()
+        ];
     }
 
     /**
-     * Updates an existing User model.
+     * Updates an existing Article model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -109,7 +129,7 @@ class UserController extends Controller
     }
 
     /**
-     * Deletes an existing User model.
+     * Deletes an existing Article model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -122,15 +142,15 @@ class UserController extends Controller
     }
 
     /**
-     * Finds the User model based on its primary key value.
+     * Finds the Article model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return User the loaded model
+     * @return Article the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = User::findOne($id)) !== null) {
+        if (($model = Article::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import store from './store';
 import router from './router';
+import NProgress from 'nprogress';
 import Qs from 'qs';
 import { Message } from 'element-ui';
 
@@ -10,6 +11,7 @@ axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
 axios.interceptors.request.use(
   config => {
+    NProgress.start();
     if (store.state.user.token) {
       config.headers.Authorization = 'Bearer ' + store.state.user.token;
       config.headers.alg = 'HS256';
@@ -22,12 +24,14 @@ axios.interceptors.request.use(
     return config
   },
   error => {
+    NProgress.done();
     return Promise.reject(error);
   }
 );
 
 axios.interceptors.response.use(
   response => {
+    NProgress.done();
     if (response.data.code === 403) {
       Message({
         message: response.data.msg,
@@ -37,6 +41,7 @@ axios.interceptors.response.use(
     return response;
   },
   error => {
+    NProgress.done();
     if (error.response) {
       switch (error.response.status) {
         case 401:

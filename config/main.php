@@ -13,6 +13,13 @@ return [
     'bootstrap' => ['log'],
     'modules' => [],
     'components' => [
+        'upload' => [
+            'class' => 'brayun\flysystem\OssFilesystem',
+            'ossServer' => 'oss-cn-shanghai.aliyuncs.com',
+            'accessKeyId' => 'LTAIS63IAXzyWQ4i',
+            'accessKeySecret' => 'eQqtJJcaFjhXiqTrZRLg8y64uFF2qU',
+            'bucket' => 'xiaotushi',
+        ],
         'request' => [
             'csrfParam' => '_csrf-backend',
         ],

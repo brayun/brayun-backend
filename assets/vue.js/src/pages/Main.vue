@@ -50,9 +50,15 @@ export default {
 
   .main-container {
     flex: 1;
+    overflow-y: scroll;
 
     .main-frame {
       padding: 10px;
+
+      .main-content {
+        background-color: #fff;
+        padding: 15px;
+      }
     }
   }
 }
